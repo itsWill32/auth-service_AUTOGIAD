@@ -1,0 +1,130 @@
+// ============================================
+// AUTH SERVICE - PRISMA SCHEMA
+// AutoDiag Project
+// ============================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// AGGREGATE ROOT: User
+// ============================================
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String?  // Nullable si usa OAuth
+  
+  // Role (UserRole VO)
+  role      UserRole @default(VEHICLE_OWNER)
+  
+  // Profile (Profile VO)
+  fullName  String
+  phone     String?
+  avatarUrl String?
+  
+  // OAuth (OAuthProvider VO)
+  oauthProvider   OAuthProvider?
+  oauthProviderId String?        @unique
+  
+  // Email Verification
+  emailVerified       Boolean   @default(false)
+  emailVerificationToken String? @unique
+  emailVerifiedAt     DateTime?
+  
+  // Status
+  isActive  Boolean  @default(true)
+  
+  // Timestamps
+  lastLoginAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // Metadata
+  metadata  Json?    // JSON para preferencias adicionales
+  
+  // Child Entities (Relationships)
+  refreshTokens   RefreshToken[]
+  passwordResets  PasswordReset[]
+  
+  @@index([email])
+  @@index([oauthProviderId])
+  @@map("users")
+}
+
+// ============================================
+// CHILD ENTITY: RefreshToken
+// ============================================
+model RefreshToken {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  tokenHash  String   @unique  // SHA256 hash del token
+  
+  // ExpirationTime VO
+  expiresAt  DateTime
+  
+  // Status
+  wasUsed    Boolean  @default(false)
+  usedAt     DateTime?
+  isRevoked  Boolean  @default(false)
+  revokedAt  DateTime?
+  
+  // Security tracking
+  ipAddress  String
+  userAgent  String
+  
+  createdAt  DateTime @default(now())
+  
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("refresh_tokens")
+}
+
+// ============================================
+// CHILD ENTITY: PasswordReset
+// ============================================
+model PasswordReset {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  resetToken String   @unique  // UUID temporal
+  
+  // ExpirationTime VO
+  expiresAt  DateTime  // Típicamente 1 hora
+  
+  // Status
+  wasUsed    Boolean   @default(false)
+  usedAt     DateTime?
+  
+  // Security tracking
+  ipAddress  String
+  
+  createdAt  DateTime  @default(now())
+  
+  @@index([userId])
+  @@index([resetToken])
+  @@map("password_resets")
+}
+
+// ============================================
+// ENUMS (Value Objects)
+// ============================================
+enum UserRole {
+  VEHICLE_OWNER
+  WORKSHOP_ADMIN
+  ADMIN
+}
+
+enum OAuthProvider {
+  GOOGLE
+  FACEBOOK
+  APPLE
+}
