@@ -54,7 +54,6 @@ model User {
 enum UserRole {
   CUSTOMER       // Propietario de vehículo
   WORKSHOP_ADMIN // Administrador de taller
-  MECHANIC       // Mecánico
   ADMIN          // Super admin
 }
 
