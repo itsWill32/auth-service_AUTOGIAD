@@ -1,7 +1,5 @@
-// ============================================
-// AUTH SERVICE - PRISMA SCHEMA
-// AutoDiag Project
-// ============================================
+// This is your Prisma schema file for Auth Service
+// Learn more: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -13,118 +11,108 @@ datasource db {
 }
 
 // ============================================
-// AGGREGATE ROOT: User
+// AUTH SERVICE MODELS
 // ============================================
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  password  String?  // Nullable si usa OAuth
-  
-  // Role (UserRole VO)
-  role      UserRole @default(VEHICLE_OWNER)
-  
-  // Profile (Profile VO)
-  fullName  String
+  password  String?  // Nullable for OAuth users
+  firstName String?
+  lastName  String?
   phone     String?
-  avatarUrl String?
+  avatar    String?
   
-  // OAuth (OAuthProvider VO)
-  oauthProvider   OAuthProvider?
-  oauthProviderId String?        @unique
+  // OAuth fields
+  googleId  String?  @unique
+  provider  String?  // 'local' | 'google'
   
-  // Email Verification
-  emailVerified       Boolean   @default(false)
-  emailVerificationToken String? @unique
-  emailVerifiedAt     DateTime?
+  // Account status
+  isVerified       Boolean  @default(false)
+  isActive         Boolean  @default(true)
+  emailVerifiedAt  DateTime?
   
-  // Status
-  isActive  Boolean  @default(true)
+  // Security
+  lastLoginAt      DateTime?
+  passwordResetToken    String?
+  passwordResetExpires  DateTime?
+  refreshToken          String?
+  
+  // Role
+  role      UserRole @default(CUSTOMER)
   
   // Timestamps
-  lastLoginAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   
-  // Metadata
-  metadata  Json?    // JSON para preferencias adicionales
-  
-  // Child Entities (Relationships)
-  refreshTokens   RefreshToken[]
-  passwordResets  PasswordReset[]
-  
+  // Indexes
   @@index([email])
-  @@index([oauthProviderId])
+  @@index([googleId])
   @@map("users")
 }
 
-// ============================================
-// CHILD ENTITY: RefreshToken
-// ============================================
-model RefreshToken {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
-  tokenHash  String   @unique  // SHA256 hash del token
-  
-  // ExpirationTime VO
-  expiresAt  DateTime
-  
-  // Status
-  wasUsed    Boolean  @default(false)
-  usedAt     DateTime?
-  isRevoked  Boolean  @default(false)
-  revokedAt  DateTime?
-  
-  // Security tracking
-  ipAddress  String
-  userAgent  String
-  
-  createdAt  DateTime @default(now())
-  
-  @@index([userId])
-  @@index([tokenHash])
-  @@map("refresh_tokens")
+enum UserRole {
+  CUSTOMER       // Propietario de vehículo
+  WORKSHOP_ADMIN // Administrador de taller
+  MECHANIC       // Mecánico
+  ADMIN          // Super admin
 }
 
 // ============================================
-// CHILD ENTITY: PasswordReset
+// PASSWORD RESET TOKENS
 // ============================================
+
 model PasswordReset {
-  id         String   @id @default(uuid())
-  userId     String
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid())
+  email     String
+  token     String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
   
-  resetToken String   @unique  // UUID temporal
+  createdAt DateTime @default(now())
   
-  // ExpirationTime VO
-  expiresAt  DateTime  // Típicamente 1 hora
-  
-  // Status
-  wasUsed    Boolean   @default(false)
-  usedAt     DateTime?
-  
-  // Security tracking
-  ipAddress  String
-  
-  createdAt  DateTime  @default(now())
-  
-  @@index([userId])
-  @@index([resetToken])
+  @@index([email])
+  @@index([token])
   @@map("password_resets")
 }
 
 // ============================================
-// ENUMS (Value Objects)
+// EMAIL VERIFICATION TOKENS
 // ============================================
-enum UserRole {
-  VEHICLE_OWNER
-  WORKSHOP_ADMIN
-  ADMIN
+
+model EmailVerification {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  verifiedAt DateTime?
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
+  @@map("email_verifications")
 }
 
-enum OAuthProvider {
-  GOOGLE
-  FACEBOOK
-  APPLE
+// ============================================
+// REFRESH TOKENS
+// ============================================
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  
+  // Device info
+  deviceId  String?
+  userAgent String?
+  ipAddress String?
+  
+  createdAt DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
 }
