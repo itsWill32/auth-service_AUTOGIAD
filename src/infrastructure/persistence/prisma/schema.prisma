@@ -81,7 +81,6 @@ model PasswordReset {
 enum UserRole {
   VEHICLE_OWNER
   WORKSHOP_ADMIN
-  MECHANIC
   SYSTEM_ADMIN
 }
 
