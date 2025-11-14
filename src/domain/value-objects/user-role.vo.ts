@@ -8,15 +8,13 @@ export enum UserRole {
 export class UserRoleVO {
   private readonly value: UserRole;
 
-  constructor(role: UserRole | string) {
-    this.validate(role);
-    this.value = role as UserRole;
-  }
-
-  private validate(role: string): void {
-    if (!Object.values(UserRole).includes(role as UserRole)) {
-      throw new Error(`Invalid user role: ${role}`);
+  constructor(role: UserRole) {
+    if (!Object.values(UserRole).includes(role)) {
+      throw new Error(
+        `Invalid user role: ${role}. Must be one of: ${Object.values(UserRole).join(', ')}`
+      );
     }
+    this.value = role;
   }
 
   getValue(): UserRole {

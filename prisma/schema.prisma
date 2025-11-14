@@ -1,5 +1,4 @@
-// src/infrastructure/persistence/prisma/schema.prisma
-
+// prisma/schema.prisma
 generator client {
   provider = "prisma-client-js"
 }
@@ -13,29 +12,30 @@ datasource db {
 // USER AGGREGATE (Aggregate Root)
 // ==============================================
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique // Email VO
-  password  String?  // Password VO (hash) - nullable para OAuth users
-  role      UserRole @default(VEHICLE_OWNER)
+  id              String          @id @default(uuid())
+  email           String          @unique
+  password        String?         // Password hash - nullable para OAuth users
+  role            UserRole        @default(VEHICLE_OWNER)
   
-  // Profile VO (aplanado)
-  fullName  String
-  phone     String?
-  avatarUrl String?
+  // Profile (aplanado)
+  fullName        String
+  phone           String?
+  avatarUrl       String?
   
   // OAuth
-  oauthProvider OAuthProvider?
+  oauthProvider   OAuthProvider?
   
   // Metadata
-  isEmailVerified Boolean @default(false)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  isEmailVerified Boolean         @default(false)
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
   
   // Relaciones (Entidades hijas del agregado)
   refreshTokens   RefreshToken[]
   passwordResets  PasswordReset[]
   
   @@map("users")
+  @@schema("auth")
 }
 
 // ==============================================
@@ -49,11 +49,12 @@ model RefreshToken {
   createdAt DateTime @default(now())
   
   // Relación con User (Aggregate Root)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@map("refresh_tokens")
   @@index([userId])
   @@index([token])
+  @@schema("auth")
 }
 
 // ==============================================
@@ -68,11 +69,12 @@ model PasswordReset {
   createdAt DateTime @default(now())
   
   // Relación con User (Aggregate Root)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   
   @@map("password_resets")
   @@index([userId])
   @@index([token])
+  @@schema("auth")
 }
 
 // ==============================================
@@ -82,9 +84,13 @@ enum UserRole {
   VEHICLE_OWNER
   WORKSHOP_ADMIN
   SYSTEM_ADMIN
+  
+  @@schema("auth")
 }
 
 enum OAuthProvider {
   GOOGLE
   EMAIL
+  
+  @@schema("auth")
 }
