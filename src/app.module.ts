@@ -1,8 +1,5 @@
-// auth-service/src/app.module.ts
-
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
-import { AuthModule } from './infrastructure/modules/auth.module';
 
 @Module({
   imports: [
@@ -10,7 +7,8 @@ import { AuthModule } from './infrastructure/modules/auth.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    AuthModule,
   ],
+  controllers: [],
+  providers: [],
 })
 export class AppModule {}
