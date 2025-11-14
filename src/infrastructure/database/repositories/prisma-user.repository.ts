@@ -4,9 +4,9 @@ import { IUserRepository } from '../../../domain/repositories/user.repository.in
 import { User } from '../../../domain/entities/user.entity';
 import { Email } from '../../../domain/value-objects/email.vo';
 import { Password } from '../../../domain/value-objects/password.vo';
-import { UserRole as UserRoleEnum } from '@prisma/client';
+import { UserRole as UserRoleEnum, OAuthProvider as OAuthProviderEnum } from '@prisma/client';
 
-¿
+
 @Injectable()
 export class PrismaUserRepository implements IUserRepository {
   constructor(private readonly prisma: PrismaService) {}
@@ -20,7 +20,7 @@ export class PrismaUserRepository implements IUserRepository {
       phone: user.getPhone(),
       avatarUrl: user.getAvatarUrl(),
       role: user.getRole() as UserRoleEnum,
-      oauthProvider: user.getOAuthProvider(),
+      oauthProvider: user.getOAuthProvider() as OAuthProviderEnum,
       isEmailVerified: user.isVerified(),
       updatedAt: user.getUpdatedAt(),
     };
@@ -61,7 +61,7 @@ export class PrismaUserRepository implements IUserRepository {
     const user = await this.prisma.user.findFirst({
       where: {
         email: email.getValue(),
-        oauthProvider: provider,
+        oauthProvider: provider as OAuthProviderEnum,
       },
     });
 
@@ -117,8 +117,6 @@ export class PrismaUserRepository implements IUserRepository {
     return users.map((user) => this.toDomain(user));
   }
 
-
-
   private toDomain(prismaUser: any): User {
     const emailVO = Email.create(prismaUser.email);
     
@@ -136,7 +134,6 @@ export class PrismaUserRepository implements IUserRepository {
         prismaUser.role,
       );
     } else {
-
       const { UserRoleVO } = require('../../../domain/value-objects/user-role.vo');
       const { Profile } = require('../../../domain/value-objects/profile.vo');
       const { OAuthProviderVO, OAuthProvider } = require('../../../domain/value-objects/oatuh-provider.vo');
