@@ -4,6 +4,10 @@
   "description": "Auth Service - AutoDiag Microservices",
   "private": true,
   "license": "MIT",
+
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
