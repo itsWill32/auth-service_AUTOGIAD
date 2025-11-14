@@ -1,7 +1,7 @@
 import { IsString, MinLength, IsEmail } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 
-¿
+
 export class RequestPasswordResetDto {
   @ApiProperty({
     description: 'Email del usuario que solicita reset',
@@ -11,7 +11,7 @@ export class RequestPasswordResetDto {
   email: string;
 }
 
-¿
+
 export class ResetPasswordDto {
   @ApiProperty({
     description: 'Token de recuperación recibido por email',
