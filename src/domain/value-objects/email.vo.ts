@@ -1,9 +1,15 @@
+
 export class Email {
   private readonly value: string;
 
-  constructor(email: string) {
+  private constructor(email: string) {
     this.validate(email);
     this.value = email.toLowerCase().trim();
+  }
+
+
+  static create(email: string): Email {
+    return new Email(email);
   }
 
   private validate(email: string): void {
