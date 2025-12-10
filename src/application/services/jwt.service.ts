@@ -22,6 +22,7 @@ export class JwtService {
       sub: user.getId(),
       email: user.getEmail(),
       role: user.getRole(),
+      fullName: user.getFullName(),
     };
 
     return this.nestJwtService.sign(payload, {
@@ -31,7 +32,7 @@ export class JwtService {
   }
 
 
-  validateToken(token: string): { sub: string; email: string; role: string } | null {
+  validateToken(token: string): { sub: string; email: string; role: string; fullName: string } | null {
     try {
       return this.nestJwtService.verify(token, {
         secret: this.JWT_SECRET,
